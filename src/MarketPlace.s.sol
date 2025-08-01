@@ -13,6 +13,12 @@ contract MarketPlace {
         uint256 price
     );
     event NFTDeListed(address indexed owner, uint256 indexed tokenId);
+    event NFTUpdated(
+        address indexed owner,
+        uint256 indexed tokenId,
+        uint256 indexed newPrice
+    );
+
     struct Listing {
         address owner;
         uint256 price;
@@ -36,6 +42,13 @@ contract MarketPlace {
         uint256 _price,
         address _nftContract
     ) public onlyOwnerCanListOrDelist(_tokenId, _nftContract) {
+        if (_price <= 0) {
+            revert("Price must be greater than zero");
+        }
+        require(
+            IERC721(_nftContract).getApproved(_tokenId) == address(this),
+            "NFT not approved for marketplace"
+        );
         listings[_nftContract][_tokenId] = Listing(msg.sender, _price);
         emit NFTListed(msg.sender, _tokenId, _price);
     }
@@ -56,5 +69,18 @@ contract MarketPlace {
             revert("Payment failed");
         }
         IERC721(_nftContract).safeTransferFrom(owner, msg.sender, _tokenid);
+        delete listings[_nftContract][_tokenid];
+    }
+
+    function updatePricing(
+        uint256 _tokenId,
+        address _nftContract,
+        uint256 _newPrice
+    ) public onlyOwnerCanListOrDelist(_tokenId, _nftContract) {
+        if (_newPrice <= 0) {
+            revert("New price must be greater than zero");
+        }
+        listings[_nftContract][_tokenId].price = _newPrice;
+        emit NFTUpdated(msg.sender, _tokenId, _newPrice);
     }
 }
