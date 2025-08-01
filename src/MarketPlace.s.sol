@@ -7,6 +7,7 @@ import {IERC721} from "lib/openzeppelin-contracts/contracts/token/ERC721/IERC721
 
 contract MarketPlace {
     error MarketPlace__OnlyOwnerCanList();
+    error MarketPlace__NotListedForSale();
     event NFTListed(
         address indexed owner,
         uint256 indexed tokenId,
@@ -29,6 +30,14 @@ contract MarketPlace {
         require(
             IERC721(_nftContract).ownerOf(tokenId) == msg.sender,
             MarketPlace__OnlyOwnerCanList()
+        );
+        _;
+    }
+    modifier isListed(uint256 _tokenId, address _nftContract) {
+        require(
+            listings[_nftContract][_tokenId].price > 0 &&
+                listings[_nftContract][_tokenId].owner != address(0),
+            MarketPlace__NotListedForSale()
         );
         _;
     }
@@ -64,7 +73,7 @@ contract MarketPlace {
     function buyNFT(uint256 _tokenid, address _nftContract) public {
         uint256 price = listings[_nftContract][_tokenid].price;
         address owner = listings[_nftContract][_tokenid].owner;
-        bool success = paymentToken.transferFrom(owner, msg.sender, price);
+        bool success = paymentToken.transferFrom(msg.sender, owner, price);
         if (!success) {
             revert("Payment failed");
         }
@@ -76,11 +85,22 @@ contract MarketPlace {
         uint256 _tokenId,
         address _nftContract,
         uint256 _newPrice
-    ) public onlyOwnerCanListOrDelist(_tokenId, _nftContract) {
+    )
+        public
+        onlyOwnerCanListOrDelist(_tokenId, _nftContract)
+        isListed(_tokenId, _nftContract)
+    {
         if (_newPrice <= 0) {
             revert("New price must be greater than zero");
         }
         listings[_nftContract][_tokenId].price = _newPrice;
         emit NFTUpdated(msg.sender, _tokenId, _newPrice);
+    }
+
+    function getListings(
+        uint256 _tokenId,
+        address _nftContract
+    ) public view returns (Listing memory) {
+        return listings[_nftContract][_tokenId];
     }
 }
