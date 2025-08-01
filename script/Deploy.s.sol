@@ -10,7 +10,10 @@ import {IERC721} from "lib/openzeppelin-contracts/contracts/token/ERC721/IERC721
 import {ERC20} from "lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
 
 contract DeployContract is Script {
-    function run() public returns (NFT, MarketPlace, HelperConfig) {
+    function run()
+        public
+        returns (NFT, MarketPlace, HelperConfig.NetworkConfig memory)
+    {
         HelperConfig netconfig = new HelperConfig();
         HelperConfig.NetworkConfig memory config = netconfig
             .getActiveNetworkChainId();
@@ -20,6 +23,6 @@ contract DeployContract is Script {
         nft.transferOwnership(address(market));
         vm.stopBroadcast();
 
-        return (nft, market, netconfig);
+        return (nft, market, config);
     }
 }
