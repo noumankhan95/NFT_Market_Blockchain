@@ -30,19 +30,23 @@ contract NFT is ERC721, Ownable {
         require(ownerOf(tokenId) != address(0), NFT__Not_Minted());
         Quote memory q = quotesToIds[tokenId];
         string memory svg = generateSVG(q.text, q.author);
-        return
-            string(
-                abi.encodePacked(
-                    _baseURI(),
-                    '{"name":"',
-                    q.text,
-                    '", "description":"By - ',
-                    q.author,
-                    '", "image": "data:image/svg+xml;base64,',
-                    Base64.encode(bytes(svg)),
-                    '"}'
+
+        string memory json = Base64.encode(
+            bytes(
+                string(
+                    abi.encodePacked(
+                        '{"name":"',
+                        q.text,
+                        '", "description":"By - ',
+                        q.author,
+                        '", "image": "data:image/svg+xml;base64,',
+                        Base64.encode(bytes(svg)),
+                        '"}'
+                    )
                 )
-            );
+            )
+        );
+        return string(abi.encodePacked(_baseURI(), json));
     }
 
     function _baseURI() internal pure override returns (string memory) {

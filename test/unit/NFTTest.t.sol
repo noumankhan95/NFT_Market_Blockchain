@@ -87,20 +87,25 @@ contract NFTTest is Test {
                 "</svg>"
             )
         );
-        string memory expectedUri = string(
-            abi.encodePacked(
-                "data:application/json;base64,",
-                '{"name":"',
-                quoteText,
-                '", "description":"By - ',
-                author,
-                '", "image": "data:image/svg+xml;base64,',
-                Base64.encode(bytes(expectedSVG)),
-                '"}'
+        string memory json = Base64.encode(
+            bytes(
+                string(
+                    abi.encodePacked(
+                        '{"name":"',
+                        quoteText,
+                        '", "description":"By - ',
+                        author,
+                        '", "image": "data:image/svg+xml;base64,',
+                        Base64.encode(bytes(expectedSVG)),
+                        '"}'
+                    )
+                )
             )
         );
+    
         assert(
-            keccak256(abi.encode(uri)) == keccak256(abi.encode(expectedUri))
+            keccak256(abi.encodePacked(uri)) ==
+                keccak256((abi.encodePacked("data:application/json;base64,", json)))
         );
     }
 

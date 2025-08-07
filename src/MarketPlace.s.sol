@@ -19,6 +19,13 @@ contract MarketPlace {
         uint256 indexed tokenId,
         uint256 indexed newPrice
     );
+    event NFTSold(
+        address indexed buyer,
+        address indexed seller,
+        uint256 indexed tokenId,
+        address nftAddress,
+        uint256 price
+    );
 
     struct Listing {
         address owner;
@@ -73,6 +80,7 @@ contract MarketPlace {
     function buyNFT(uint256 _tokenid, address _nftContract) public {
         uint256 price = listings[_nftContract][_tokenid].price;
         address owner = listings[_nftContract][_tokenid].owner;
+        emit NFTSold(msg.sender, owner, _tokenid, _nftContract, price);
         bool success = paymentToken.transferFrom(msg.sender, owner, price);
         if (!success) {
             revert("Payment failed");

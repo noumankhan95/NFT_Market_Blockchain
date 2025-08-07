@@ -1,7 +1,8 @@
 //SPDX-License-Identifier:MIT
 pragma solidity ^0.8.18;
 import {Script} from "forge-std/Script.sol";
-import {ERC20Mock} from "lib/openzeppelin-contracts/contracts/mocks/token/ERC20Mock.sol";
+import {console} from "forge-std/console.sol";
+import {MockUSDC} from "../test/mock/Usdc.sol";
 
 contract HelperConfig is Script {
     struct NetworkConfig {
@@ -44,7 +45,10 @@ contract HelperConfig is Script {
     }
 
     function getAnvilChain() internal returns (NetworkConfig memory) {
-        ERC20Mock usdc = new ERC20Mock();
+        vm.startBroadcast(BURNER_WALLET);
+        MockUSDC usdc = new MockUSDC();
+        usdc.mint(BURNER_WALLET, 100e18); // Mint 100 USDC to the burner wallet
+        vm.stopBroadcast();
         return NetworkConfig({usdc: address(usdc), account: BURNER_WALLET});
     }
 }

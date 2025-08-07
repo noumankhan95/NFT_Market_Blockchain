@@ -20,6 +20,7 @@ contract DeployContract is Script {
         vm.startBroadcast(config.account);
         MarketPlace market = new MarketPlace(ERC20(config.usdc));
         NFT nft = new NFT();
+   
         nft.transferOwnership(address(market));
         vm.stopBroadcast();
 
